@@ -1,0 +1,32 @@
+{
+  "name": "non-deterministic",
+  "version": "1.0.0",
+  "description": "An object template for nondeterminstic execution of the prototype chain.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riatzukiza/non-deterministic.git"
+  },
+  "dependencies":{
+    "q":"latest"
+  },
+  "keywords": [
+    "non-determinisim",
+    "object",
+    "promise",
+    "events",
+    "eventEmitter",
+    "prototype",
+    "choice",
+    "hidden"
+  ],
+  "author": "Aaron Beavers",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/riatzukiza/non-deterministic/issues"
+  },
+  "homepage": "https://github.com/riatzukiza/non-deterministic#readme"
+}
