@@ -1,15 +1,21 @@
 "use strict";
 var EventEmitter = require("events").EventEmitter;
+var Q = require("q");
 var oldEmit =  EventEmitter.prototype.emit;
 require("util").inherits(NonDeterministicEventEmitter,EventEmitter);
 function NonDeterministicEventEmitter() {
   EventEmitter.call(this,...arguments);
 };
 function firstLetterUppercase(string) {
-  var Propername = name.split("");
-  Propername[0] = Propername[0].toUpperCase();
-  Propername = Propername.join("");
-  return Propername;
+  try {
+    var Propername = string.split("");
+    Propername[0] = Propername[0].toUpperCase();
+    Propername = Propername.join("");
+    console.log("propername",Propername);
+    return Propername;
+  } catch(err) {
+    throw err;
+  }
 };
 NonDeterministicEventEmitter.prototype.emit = function()  {
   var args = [].slice.call(arguments,1);
@@ -18,7 +24,7 @@ NonDeterministicEventEmitter.prototype.emit = function()  {
   oldEmit.apply(this,arguments);
 };
 function walkHiddenPrototype(hiddenName,Propername,obj) {
-  return obj[hiddenName].call(this,...arguments)
+  return Q(obj[hiddenName].call(this,...arguments))
     .then((result) => {
       this.emit("after"+Propername,result);
       return result;
@@ -49,18 +55,28 @@ function walkProperPrototype(Propername,obj,args) {
   return Q.reject(err);
 };
 function choicePoint(unit,name,pre,expectedOutCome) {
+  var outerArgs = [].slice.call(arguments);
   unit.prototype[name] = function () {
+    console.log("choice being made",outerArgs);
     var hiddenName = "_"+name;
     var Propername = firstLetterUppercase(name);
+    console.log("names",hiddenName,Propername);
     this.emit("before"+Propername,...arguments);
     if(typeof pre === "function") {
+      console.log("there was a pre condition given");
       return Q()
         .then(() => pre.call(this,...arguments))
-        .catch(() => walkHiddenPrototype.call
+        .catch((err) => {
+          console.log("precondition failed",err);
+          return walkHiddenPrototype.call
           (this,hiddenName,Propername,this)
-            .then((v) => typeof expectedOutCome === "function"
-                ? expectedOutCome.call(this,v,arguments) : v));
+            .then((v) => {
+              return typeof expectedOutCome === "function"
+                ? expectedOutCome.call(this,v,arguments) : v
+            });
+        });
     }
+    console.log("no pre condition")
     return walkHiddenPrototype.call
       (this,hiddenName,Propername,this)
         .then(expectedOutCome||null)
